@@ -3,27 +3,27 @@ import hashlib
 import hmac
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'emperor_market_ultimate_2026')
+app.config['SECRET_KEY'] = 'emperor_market_ultimate_2026'
 
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///market.db'
-from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy(app)
 
-# Токен вашего Telegram-бота (лучше прописать в Environment Variables на Render)
-TG_BOT_TOKEN = os.environ.get('TG_BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
+# Встроенный токен вашего Telegram-бота
+TG_BOT_TOKEN = '8802407115:AAGJo8tf27yUk2HDPF3gOV42forwvXw9Vjw'
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tg_id = db.Column(db.String(50), unique=True, nullable=False)
     username = db.Column(db.String(100), nullable=False)
     avatar = db.Column(db.String(300), nullable=True)
-    balance = db.Column(db.Integer, default=1000) # Старт бонус для теста 1000 руб
+    balance = db.Column(db.Integer, default=1000) # Стартовый баланс для теста 1000 ₽
     rating = db.Column(db.Float, default=5.0)
 
 class Item(db.Model):
@@ -33,7 +33,7 @@ class Item(db.Model):
     category = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(500), nullable=True)
-    status = db.Column(db.String(20), default='active') # active, frozen, completed
+    status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     seller = db.relationship('User', backref=db.backref('items', lazy=True))
@@ -43,7 +43,7 @@ class Deal(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    status = db.Column(db.String(20), default='in_progress') # in_progress, completed, cancelled
+    status = db.Column(db.String(20), default='in_progress')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     item = db.relationship('Item')
@@ -73,12 +73,9 @@ def index():
 
     return render_template('index.html', items=items, current_cat=category, current_user=current_user)
 
-# --- АВТОРИЗАЦИЯ ТЕЛЕГРАМ ---
 @app.route('/auth/telegram')
 def telegram_auth():
     auth_data = request.args.to_dict()
-    
-    # Проверка подписи Telegram (безопасность)
     check_hash = auth_data.get('hash')
     if not check_hash:
         return redirect(url_for('index'))
@@ -92,8 +89,7 @@ def telegram_auth():
     secret_key = hashlib.sha256(TG_BOT_TOKEN.encode()).digest()
     hmac_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     
-    # Если токен не настроен или хэш совпал — авторизуем
-    if TG_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE' or hmac.compare_digest(hmac_hash, check_hash):
+    if hmac.compare_digest(hmac_hash, check_hash):
         tg_id = str(auth_data.get('id'))
         username = auth_data.get('first_name', 'Игрок')
         avatar = auth_data.get('photo_url', '')
@@ -113,7 +109,6 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('index'))
 
-# --- СОЗДАНИЕ ЛОТА ---
 @app.route('/create', methods=['GET', 'POST'])
 def create_item():
     if 'user_id' not in session:
@@ -141,7 +136,6 @@ def create_item():
 
     return render_template('create.html', current_user=current_user)
 
-# --- БЕЗОПАСНАЯ СДЕЛКА (ГАРАНТ) ---
 @app.route('/buy/<int:item_id>', methods=['POST'])
 def buy_item(item_id):
     if 'user_id' not in session:
@@ -156,7 +150,6 @@ def buy_item(item_id):
     if buyer.balance < item.price:
         return "Недостаточно средств на балансе!", 400
 
-    # Заморозка средств
     buyer.balance -= item.price
     item.status = 'frozen'
     
@@ -188,7 +181,6 @@ def complete_deal(deal_id):
     if deal.status == 'in_progress':
         deal.status = 'completed'
         deal.item.status = 'completed'
-        # Перевод денег продавцу
         seller = User.query.get(deal.seller_id)
         seller.balance += deal.item.price
         db.session.commit()
