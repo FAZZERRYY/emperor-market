@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Сделка #{{ deal.id }} | Emperor Market</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-base: #09090b; --bg-surface: #18181b; --accent-gold: #fbbf24; --text-primary: #fafafa; --text-secondary: #a1a1aa; --success: #10b981; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-base); color: var(--text-primary); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .deal-card { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px; width: 100%; max-width: 600px; text-align: center; }
+        h2 { font-family: 'Outfit', sans-serif; font-size: 24px; margin-bottom: 16px; }
+        .status-box { background: rgba(251, 191, 36, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 12px; border-radius: 12px; margin: 20px 0; font-weight: 600; }
+        .info-group { text-align: left; margin: 20px 0; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; }
+        .info-group p { margin-bottom: 8px; color: var(--text-secondary); }
+        .info-group span { color: var(--text-primary); font-weight: 600; }
+        .btn { background: var(--success); color: #fff; border: none; padding: 16px 32px; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%; margin-top: 20px; }
+        .btn:hover { opacity: 0.9; }
+        .back-link { display: block; margin-top: 20px; color: var(--text-secondary); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="deal-card">
+        <h2>Безопасная сделка #{{ deal.id }}</h2>
+        <div class="status-box">
+            {% if deal.status == 'in_progress' %}Средства заморожены гарантом. Ожидайте выполнения заказа.{% endif %}
+            {% if deal.status == 'completed' %}Сделка успешно завершена! Средства переведены продавцу.{% endif %}
+        </div>
+
+        <div class="info-group">
+            <p>Товар: <span>{{ deal.item.title }}</span></p>
+            <p>Сумма: <span>{{ deal.item.price }} ₽</span></p>
+            <p>Продавец: <span>{{ deal.seller.username }}</span></p>
+            <p>Покупатель: <span>{{ deal.buyer.username }}</span></p>
+        </div>
+
+        {% if deal.status == 'in_progress' and current_user_id == deal.buyer_id %}
+        <form action="/deal/{{ deal.id }}/complete" method="POST">
+            <button type="submit" class="btn">Я получил товар — Подтвердить сделку</button>
+        </form>
+        {% endif %}
+
+        <a href="/" class="back-link">На главную маркетплейса</a>
+    </div>
+</body>
+</html>
