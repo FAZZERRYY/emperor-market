@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать лот | Emperor Market</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-surface: #18181b;
+            --bg-surface-hover: #27272a;
+            --accent-gold: #fbbf24;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --radius-lg: 24px;
+            --radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-gold);
+        }
+
+        textarea { resize: vertical; height: 100px; }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover { background: #f59e0b; }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: var(--text-primary); }
+    </style>
+</head>
+<body>
+
+    <div class="form-card">
+        <h2>Создать новый лот</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label>Название товара</label>
+                <input type="text" name="title" placeholder="например, 1000 Robux (Gamepass)" required>
+            </div>
+
+            <div class="form-group">
+                <label>Категория</label>
+                <select name="category">
+                    <option value="robux">Robux (Робуксы)</option>
+                    <option value="accounts">Аккаунты</option>
+                    <option value="mm2">Murder Mystery 2</option>
+                    <option value="adoptme">Adopt Me</option>
+                    <option value="bloxfruits">Blox Fruits</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Цена (в рублях)</label>
+                <input type="number" name="price" placeholder="480" required>
+            </div>
+
+            <div class="form-group">
+                <label>Описание и условия</label>
+                <textarea name="description" placeholder="Опишите, как происходит передача товара..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">Опубликовать лот</button>
+        </form>
+        <a href="/" class=" назад back-link">← Вернуться на главную</a>
+    </div>
+
+</body>
+</html>
