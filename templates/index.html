@@ -1,30 +1,268 @@
-{% for item in items %}
-<div class="offer-card">
-    <div class="seller-block">
-        <div class="avatar-wrap">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ item.seller.username }}" alt="Аватар" class="seller-img">
-            <div class="status-dot"></div>
-        </div>
-        <div class="seller-info">
-            <h4>{{ item.seller.username }}</h4>
-            <div class="rating">★ {{ item.seller.rating }} <span>(142 отзыва)</span></div>
-        </div>
-    </div>
-    
-    <div class="item-block">
-        <h3 class="item-title">{{ item.title }}</h3>
-        <div class="item-tags">
-            <span class="tag highlight">Комиссия на мне</span>
-            <span class="tag">Выдача 5 мин</span>
-        </div>
-    </div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emperor Market | P2P Биржа Roblox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-surface: #18181b;
+            --bg-surface-hover: #27272a;
+            --accent-gold: #fbbf24;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success: #10b981;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    <div class="action-block">
-        <div class="price-wrap">
-            <p>Цена за лот</p>
-            <div class="price">{{ item.price }} ₽</div>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 16px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--accent-gold); }
+
+        .btn-sell {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--accent-gold);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-sell:hover {
+            background: var(--accent-gold);
+            color: #000;
+        }
+
+        /* Таб-навигация */
+        .tabs-container {
+            margin: 32px 0 24px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        .tabs-container::-webkit-scrollbar { display: none; }
+
+        .tab {
+            padding: 12px 24px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 15px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+        .tab:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+        .tab.active { background: var(--text-primary); color: var(--bg-base); border-color: var(--text-primary); }
+
+        /* Поиск */
+        .filter-bar {
+            margin-bottom: 32px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .search-box input:focus { border-color: var(--accent-gold); }
+
+        /* Лента лотов */
+        .feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 60px;
+        }
+
+        .offer-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            transition: var(--transition);
+        }
+        .offer-card:hover {
+            border-color: rgba(251, 191, 36, 0.4);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            background: #1a1a1e;
+        }
+
+        .seller-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 250px;
+        }
+        .avatar-wrap { position: relative; }
+        .seller-img {
+            width: 48px; height: 48px; border-radius: 50%; background: #27272a; object-fit: cover;
+        }
+        .status-dot {
+            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+            background: var(--success); border: 2px solid var(--bg-surface); border-radius: 50%;
+        }
+        .seller-info h4 { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .rating { font-size: 13px; color: var(--accent-gold); display: flex; align-items: center; gap: 4px; }
+        .rating span { color: var(--text-secondary); }
+
+        .item-block { flex-grow: 1; }
+        .item-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+        .item-desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 10px; }
+        .item-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .tag { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); padding: 4px 10px; border-radius: 6px; font-size: 12px; }
+
+        .action-block { text-align: right; display: flex; align-items: center; gap: 24px; }
+        .price-wrap p { color: var(--text-secondary); font-size: 12px; margin-bottom: 4px; }
+        .price { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: var(--text-primary); }
+        
+        .btn-buy {
+            background: var(--text-primary); color: var(--bg-base); border: none;
+            padding: 14px 28px; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-buy:hover { background: var(--accent-gold); transform: scale(1.05); }
+
+        .empty-state { text-align: center; padding: 60px; color: var(--text-secondary); }
+
+        @media (max-width: 768px) {
+            .offer-card { flex-direction: column; align-items: flex-start; }
+            .seller-block { width: 100%; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+            .action-block { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container header-flex">
+            <a href="/" class="logo">Emperor<span>.</span>Market</a>
+            <div class="header-controls">
+                <a href="/create" class="btn-sell">+ Создать лот</a>
+            </div>
         </div>
-        <button class="btn-buy">Купить</button>
-    </div>
-</div>
-{% endfor %}
+    </header>
+
+    <main class="container">
+        <!-- Категории -->
+        <div class="tabs-container">
+            <a href="/?category=all" class="tab {% if current_cat == 'all' %}active{% endif %}">Все товары</a>
+            <a href="/?category=robux" class="tab {% if current_cat == 'robux' %}active{% endif %}">Robux (Робуксы)</a>
+            <a href="/?category=accounts" class="tab {% if current_cat == 'accounts' %}active{% endif %}">Аккаунты</a>
+            <a href="/?category=mm2" class="tab {% if current_cat == 'mm2' %}active{% endif %}">Murder Mystery 2</a>
+            <a href="/?category=adoptme" class="tab {% if current_cat == 'adoptme' %}active{% endif %}">Adopt Me</a>
+            <a href="/?category=bloxfruits" class="tab {% if current_cat == 'bloxfruits' %}active{% endif %}">Blox Fruits</a>
+        </div>
+
+        <!-- Поиск -->
+        <div class="filter-bar">
+            <form method="GET" action="/" class="search-box">
+                <input type="text" name="search" placeholder="Поиск по названию или продавцу...">
+            </form>
+        </div>
+
+        <!-- Лента -->
+        <div class="feed">
+            {% if items %}
+                {% for item in items %}
+                <div class="offer-card">
+                    <div class="seller-block">
+                        <div class="avatar-wrap">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ item.seller.username }}" alt="Аватар" class="seller-img">
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="seller-info">
+                            <h4>{{ item.seller.username }}</h4>
+                            <div class="rating">★ {{ item.seller.rating }} <span>(142 отзыва)</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="item-block">
+                        <h3 class="item-title">{{ item.title }}</h3>
+                        {% if item.description %}
+                        <p class="item-desc">{{ item.description }}</p>
+                        {% endif %}
+                        <div class="item-tags">
+                            <span class="tag">{{ item.category | upper }}</span>
+                            <span class="tag">Безопасная сделка</span>
+                        </div>
+                    </div>
+
+                    <div class="action-block">
+                        <div class="price-wrap">
+                            <p>Цена</p>
+                            <div class="price">{{ item.price }} ₽</div>
+                        </div>
+                        <form action="/buy/{{ item.id }}" method="POST">
+                            <button type="submit" class="btn-buy">Купить</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>В этой категории пока нет активных лотов. Будьте первыми, кто создаст предложение!</h3>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
